@@ -13,7 +13,7 @@ class Ui_Dialog(object):
         Dialog.setObjectName("Dialog")
         Dialog.resize(400, 217)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(30, 170, 341, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(230, 170, 160, 35))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
@@ -47,10 +47,14 @@ class Ui_Dialog(object):
         self.lineEdit_5 = QtWidgets.QLineEdit(Dialog)
         self.lineEdit_5.setGeometry(QtCore.QRect(230, 140, 130, 22))
         self.lineEdit_5.setObjectName("lineEdit_5")
+        self.pushButton = QtWidgets.QPushButton(Dialog)
+        self.pushButton.setGeometry(QtCore.QRect(75, 175, 75, 23))
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton_2 = QtWidgets.QPushButton(Dialog)
+        self.pushButton_2.setGeometry(QtCore.QRect(155, 175, 75, 23))
+        self.pushButton_2.setObjectName("pushButton_2")
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept)
-        self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -61,4 +65,6 @@ class Ui_Dialog(object):
         self.label_3.setText(_translate("Dialog", "Learning Rate:"))
         self.label_4.setText(_translate("Dialog", "Learning Steps:"))
         self.label_5.setText(_translate("Dialog", "Batch Size:"))
+        self.pushButton.setText(_translate("Dialog", "Reset"))
+        self.pushButton_2.setText(_translate("Dialog", "Apply"))
 
