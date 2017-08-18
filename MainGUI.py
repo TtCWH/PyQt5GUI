@@ -5,6 +5,8 @@ import Parameters
 import MigrateTraining
 import tensorflow as tf
 import os.path
+import os
+import shutil
 
 
 
@@ -16,16 +18,31 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.pushButton_2.clicked.connect(lambda: self.ShowFileDialog(2))
         self.pushButton_7.clicked.connect(lambda: self.ShowFileDialog(7))
+        self.pushButton_3.clicked.connect(lambda: self.update_textedit("Start training...\n"))
         self.pushButton_3.clicked.connect(self.start_training)
+        self.pushButton_4.clicked.connect(self.save_results)
+        self.pushButton_5.clicked.connect(self.delete_model)
+
+    def delete_model(self):
+        reply = QtWidgets.QMessageBox.warning(self, 'Delete Model', 'Delete the saved model?',
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            shutil.rmtree(r'Models/')
+            os.mkdir(r'Models')
+            self.textEdit.setText("")
+            QtWidgets.QMessageBox.information(self, 'Delete Done', 'You have deleted the model.')
+
 
     def ShowFileDialog(self, n):
         if n == 2:
-            fname = QtWidgets.QFileDialog.getExistingDirectory()
-            self.lineEdit.setText(fname)
-            Parameters.INPUT_DATA = fname
+            fname= QtWidgets.QFileDialog.getExistingDirectory()
+            if fname:
+                self.lineEdit.setText(fname)
+                Parameters.INPUT_DATA = fname
         elif n == 7:
             fname = QtWidgets.QFileDialog.getOpenFileName()
-            self.lineEdit_2.setText(fname[0])
+            if fname[0]:
+                self.lineEdit_2.setText(fname[0])
 
     def learning_status_init(self):
         status_info = "Validation Percentage: %d\nTestSet Percentage: %d\n" \
@@ -37,16 +54,31 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
     def check_status(self):
         pass
 
+    def update_textedit(self, status_info):
+        self.textEdit.append(status_info)
+
+    def save_results(self):
+        res_info = self.textEdit.toPlainText()
+        fname= QtWidgets.QFileDialog.getSaveFileName(directory='Results/')
+        if fname[0]:
+            res_save = open(fname[0], 'w')
+            res_save.write(res_info)
+            res_save.close()
+            res_save.close()
+
     def start_training(self):
         # self.check_status()
-        self.textEdit.append("Start training...\nTestSetSamples:\n")
+        self.update_textedit("TestSetSamples:\n")
+        QtCore.QCoreApplication.processEvents()
+        #self.textEdit.append("Start training...\nTestSetSamples:\n")
         image_lists = MigrateTraining.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
 
         label_name_list = list(image_lists.keys())
         label_name_list.sort()
         for label_name in label_name_list:
             for sample in image_lists[label_name]['testing']:
-                self.textEdit.append(sample)
+                self.update_textedit(sample)
+                QtCore.QCoreApplication.processEvents()
 
         n_classes = len(image_lists.keys())
 
@@ -86,6 +118,8 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
 
             #训练过程
             for i in range(Parameters.LearningSteps):
+                self.progressBar.setValue(float(i) / Parameters.LearningSteps * 100.0 + 1.0)
+                QtCore.QCoreApplication.processEvents()
                 train_bottlenecks, train_ground_truth = MigrateTraining.get_random_cached_bottlenecks(
                     sess, n_classes, image_lists, Parameters.BatchSize, 'training', jpeg_data_tensor, bottleneck_tensor)
                 sess.run(train_step,
@@ -98,7 +132,8 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
                         bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
                     mid_res_show = 'Step %d: Validation accuracy on random sampled %d examples = %.1f%%' % \
                                    (i, Parameters.BatchSize, validation_accuracy * 100)
-                    self.textEdit.append(mid_res_show)
+                    self.update_textedit(mid_res_show)
+                    QtCore.QCoreApplication.processEvents()
                     saver.save(sess, os.path.join(Parameters.MODEL_SAVE_PATH, Parameters.MODEL_SAVE_NAME), global_step=i)
 
             # 在最后的测试数据上测试正确率。
@@ -107,7 +142,7 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
             test_accuracy = sess.run(evaluation_step, feed_dict={
                 bottleneck_input: test_bottlenecks, ground_truth_input: test_ground_truth})
             res_show = 'Final test accuracy = %.1f%%' % (test_accuracy * 100)
-            self.textEdit.append(res_show)
+            self.update_textedit(res_show)
 
 
 

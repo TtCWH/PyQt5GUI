@@ -12,6 +12,9 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(400, 217)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Icons/Settings.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        Dialog.setWindowIcon(icon)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(230, 170, 160, 35))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -59,12 +62,12 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label.setText(_translate("Dialog", "Validation Percentage(0~100):"))
-        self.label_2.setText(_translate("Dialog", "TestSet Percentage(0~100):"))
-        self.label_3.setText(_translate("Dialog", "Learning Rate:"))
-        self.label_4.setText(_translate("Dialog", "Learning Steps:"))
-        self.label_5.setText(_translate("Dialog", "Batch Size:"))
+        Dialog.setWindowTitle(_translate("Dialog", "Settings"))
+        self.label.setText(_translate("Dialog", "Validation Percentage(0~50):"))
+        self.label_2.setText(_translate("Dialog", "TestSet Percentage(0~50):"))
+        self.label_3.setText(_translate("Dialog", "Learning Rate(0~1):"))
+        self.label_4.setText(_translate("Dialog", "Training Steps:"))
+        self.label_5.setText(_translate("Dialog", "Batch Size(Blow total size):"))
         self.pushButton.setText(_translate("Dialog", "Reset"))
         self.pushButton_2.setText(_translate("Dialog", "Apply"))
 

@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Icons/Settings.png</normaloff>Icons/Settings.png</iconset>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -39,7 +43,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Validation Percentage(0~100):</string>
+    <string>Validation Percentage(0~50):</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
@@ -52,7 +56,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>TestSet Percentage(0~100):</string>
+    <string>TestSet Percentage(0~50):</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -65,7 +69,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Learning Rate:</string>
+    <string>Learning Rate(0~1):</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
@@ -78,7 +82,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Learning Steps:</string>
+    <string>Training Steps:</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_5">
@@ -91,7 +95,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Batch Size:</string>
+    <string>Batch Size(Blow total size):</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="lineEdit">
