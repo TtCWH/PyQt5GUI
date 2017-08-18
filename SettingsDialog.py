@@ -3,7 +3,6 @@ from SettingsDialogUI import Ui_Dialog
 import Parameters
 import sys
 
-
 class SettingsDialog(Ui_Dialog, QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(SettingsDialog, self).__init__()
@@ -34,7 +33,7 @@ class SettingsDialog(Ui_Dialog, QtWidgets.QDialog):
             validation_percentage = self.adjust_parameters(int(self.lineEdit.text()), 0, 50)
             testset_percentage = self.adjust_parameters(int(self.lineEdit_2.text()), 0, 50)
             learning_rate = self.adjust_parameters(float(self.lineEdit_3.text()), 0.0, float("inf"))
-            learning_steps = self.adjust_parameters(float(self.lineEdit_4.text()), 0, sys.maxsize)
+            learning_steps = self.adjust_parameters(int(self.lineEdit_4.text()), 0, sys.maxsize)
             batch_size = self.adjust_parameters(int(self.lineEdit_5.text()), 0, sys.maxsize)
 
             Parameters.ValidationPercentage = validation_percentage

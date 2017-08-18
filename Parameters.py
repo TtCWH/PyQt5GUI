@@ -18,3 +18,6 @@ MODEL_SAVE_PATH = 'Models/'
 MODEL_SAVE_NAME = 'CNNModel'
 Result_Save_Path = 'Results/Result.txt'
 
+N_CLASSES = 2
+
+
