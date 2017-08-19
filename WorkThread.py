@@ -4,23 +4,29 @@ from tensorflow.python.platform import gfile
 import numpy as np
 import tensorflow as tf
 import Parameters
-import MigrateTraining
+import PreProcess
 import os.path
 
-class TraingProcess(QtCore.QThread):
+class TrainingProcess(QtCore.QThread):
     status_info = QtCore.pyqtSignal(str)
     done_percentage = QtCore.pyqtSignal(float)
+    finish_signal = QtCore.pyqtSignal(bool)
+    error_signal = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
-        super(TraingProcess, self).__init__()
+        super(TrainingProcess, self).__init__()
 
     def run(self):
-        self.status_info.emit("TestSetSamples:\n")
+        #print(Parameters.INPUT_DATA)
         # self.check_status()
         #self.update_textedit()
         #QtCore.QCoreApplication.processEvents()
         #self.textEdit.append("Start training...\nTestSetSamples:\n")
-        image_lists = MigrateTraining.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
+        image_lists = PreProcess.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
+        #print(image_lists)
+        if image_lists == -1 or image_lists == {}:
+            self.error_signal.emit(1)
+            return
 
         label_name_list = list(image_lists.keys())
         label_name_list.sort()
@@ -29,7 +35,7 @@ class TraingProcess(QtCore.QThread):
                 self.status_info.emit(sample)
                 #self.update_textedit(sample)
                 #QtCore.QCoreApplication.processEvents()
-
+        self.status_info.emit("TestSetSamples:")
         n_classes = len(image_lists.keys())
         Parameters.N_CLASSES = n_classes
 
@@ -73,14 +79,22 @@ class TraingProcess(QtCore.QThread):
                 self.done_percentage.emit(Done_percentage)
                 #QtCore.QCoreApplication.processEvents()
 
-                train_bottlenecks, train_ground_truth = MigrateTraining.get_random_cached_bottlenecks(
-                    sess, n_classes, image_lists, Parameters.BatchSize, 'training', jpeg_data_tensor, bottleneck_tensor)
+                try:
+                    train_bottlenecks, train_ground_truth = PreProcess.get_random_cached_bottlenecks(
+                        sess, n_classes, image_lists, Parameters.BatchSize, 'training', jpeg_data_tensor, bottleneck_tensor)
+                except:
+                    self.error_signal.emit(3)
+                    return
                 sess.run(train_step,
-                         feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
+                        feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
 
                 if i % 100 == 0 or i + 1 == Parameters.LearningSteps:
-                    validation_bottlenecks, validation_ground_truth = MigrateTraining.get_random_cached_bottlenecks(
-                        sess, n_classes, image_lists, Parameters.BatchSize, 'validation', jpeg_data_tensor, bottleneck_tensor)
+                    try:
+                        validation_bottlenecks, validation_ground_truth = PreProcess.get_random_cached_bottlenecks(
+                            sess, n_classes, image_lists, Parameters.BatchSize, 'validation', jpeg_data_tensor, bottleneck_tensor)
+                    except:
+                        self.error_signal.emit(4)
+                        return
                     validation_accuracy = sess.run(evaluation_step, feed_dict={
                         bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
                     mid_res_show = 'Step %d: Validation accuracy on random sampled %d examples = %.1f%%' % \
@@ -91,8 +105,12 @@ class TraingProcess(QtCore.QThread):
                     saver.save(sess, os.path.join(Parameters.MODEL_SAVE_PATH, Parameters.MODEL_SAVE_NAME), global_step=i)
 
             # 在最后的测试数据上测试正确率。
-            test_bottlenecks, test_ground_truth = MigrateTraining.get_test_bottlenecks(
-                sess, image_lists, n_classes, jpeg_data_tensor, bottleneck_tensor)
+            try:
+                test_bottlenecks, test_ground_truth = PreProcess.get_test_bottlenecks(
+                    sess, image_lists, n_classes, jpeg_data_tensor, bottleneck_tensor)
+            except:
+                self.error_signal.emit(5)
+                return
             test_accuracy = sess.run(evaluation_step, feed_dict={
                 bottleneck_input: test_bottlenecks, ground_truth_input: test_ground_truth})
             res_show = 'Final test accuracy = %.1f%%' % (test_accuracy * 100)
@@ -100,14 +118,26 @@ class TraingProcess(QtCore.QThread):
             #self.update_textedit(res_show)
             #QtCore.QCoreApplication.processEvents()
 
+        self.finish_signal.emit(True)
+
 
 class PicturePredict(QtCore.QThread):
     trigger = QtCore.pyqtSignal(int)
+    finish_signal = QtCore.pyqtSignal(bool)
+    error_signal = QtCore.pyqtSignal(int)
+
     def __init__(self,  image_path, parent=None):
         super(PicturePredict, self).__init__()
         self.image_Path = image_path
 
     def run(self):
+        try:
+            image_data = gfile.FastGFile(self.image_Path, 'rb').read()
+            #print(image_data)
+        except:
+            self.error_signal.emit(2)
+            return
+
         # 读取已经训练好的Inception-v3模型。
         with gfile.FastGFile(os.path.join(Parameters.MODEL_DIR, Parameters.MODEL_FILE), 'rb') as f:
             graph_def = tf.GraphDef()
@@ -133,8 +163,11 @@ class PicturePredict(QtCore.QThread):
             ckpt = tf.train.get_checkpoint_state(Parameters.MODEL_SAVE_PATH)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
-                image_data = gfile.FastGFile(self.image_Path, 'rb').read()
-                predict_bottleneck = sess.run(bottleneck_tensor, {jpeg_data_tensor: image_data})
+                try:
+                    predict_bottleneck = sess.run(bottleneck_tensor, {jpeg_data_tensor: image_data})
+                except:
+                    self.error_signal.emit(2)
+                    return
                 # print(predict_bottleneck.shape)
                 res = sess.run(final_tensor, feed_dict={bottleneck_input: predict_bottleneck})
                 res = np.argmax(res, 1)
@@ -143,7 +176,9 @@ class PicturePredict(QtCore.QThread):
             else:
                 print('No checkpoint file found.')
                 self.trigger.emit(-1)
-        self.sleep(10)
+
+        self.finish_signal.emit(True)
+
 
 
 
