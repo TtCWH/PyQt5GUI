@@ -1,0 +1,79 @@
+Validation Percentage: 10
+TestSet Percentage: 20
+Learning Rate: 0.010000
+Learning Steps: 3000
+Batch Size: 32
+
+Start training...
+
+TestSetSamples:
+001-0.jpg
+006-0.jpg
+007-0.jpg
+010-0.jpg
+011-0.jpg
+012-0.jpg
+017-0.jpg
+019-0.jpg
+020-0.jpg
+039-0.jpg
+043-0.jpg
+045-0.jpg
+052-0.jpg
+059-0.jpg
+061-0.jpg
+067-0.jpg
+069-0.jpg
+071-0.jpg
+076-0.jpg
+080-0.jpg
+093-0.jpg
+001-1.jpg
+008-1.jpg
+020-1.jpg
+021-1.jpg
+027-1.jpg
+033-1.jpg
+034-1.jpg
+035-1.jpg
+037-1.jpg
+041-1.jpg
+043-1.jpg
+045-1.jpg
+052-1.jpg
+058-1.jpg
+061-1.jpg
+078-1.jpg
+080-1.jpg
+Step 0: Validation accuracy on random sampled 32 examples = 90.6%
+Step 100: Validation accuracy on random sampled 32 examples = 93.8%
+Step 200: Validation accuracy on random sampled 32 examples = 93.8%
+Step 300: Validation accuracy on random sampled 32 examples = 100.0%
+Step 400: Validation accuracy on random sampled 32 examples = 93.8%
+Step 500: Validation accuracy on random sampled 32 examples = 96.9%
+Step 600: Validation accuracy on random sampled 32 examples = 90.6%
+Step 700: Validation accuracy on random sampled 32 examples = 90.6%
+Step 800: Validation accuracy on random sampled 32 examples = 93.8%
+Step 900: Validation accuracy on random sampled 32 examples = 87.5%
+Step 1000: Validation accuracy on random sampled 32 examples = 87.5%
+Step 1100: Validation accuracy on random sampled 32 examples = 93.8%
+Step 1200: Validation accuracy on random sampled 32 examples = 100.0%
+Step 1300: Validation accuracy on random sampled 32 examples = 96.9%
+Step 1400: Validation accuracy on random sampled 32 examples = 93.8%
+Step 1500: Validation accuracy on random sampled 32 examples = 93.8%
+Step 1600: Validation accuracy on random sampled 32 examples = 93.8%
+Step 1700: Validation accuracy on random sampled 32 examples = 96.9%
+Step 1800: Validation accuracy on random sampled 32 examples = 90.6%
+Step 1900: Validation accuracy on random sampled 32 examples = 96.9%
+Step 2000: Validation accuracy on random sampled 32 examples = 96.9%
+Step 2100: Validation accuracy on random sampled 32 examples = 93.8%
+Step 2200: Validation accuracy on random sampled 32 examples = 100.0%
+Step 2300: Validation accuracy on random sampled 32 examples = 96.9%
+Step 2400: Validation accuracy on random sampled 32 examples = 90.6%
+Step 2500: Validation accuracy on random sampled 32 examples = 93.8%
+Step 2600: Validation accuracy on random sampled 32 examples = 100.0%
+Step 2700: Validation accuracy on random sampled 32 examples = 100.0%
+Step 2800: Validation accuracy on random sampled 32 examples = 93.8%
+Step 2900: Validation accuracy on random sampled 32 examples = 96.9%
+Step 2999: Validation accuracy on random sampled 32 examples = 90.6%
+Final test accuracy = 92.1%

@@ -22,20 +22,24 @@ class TrainingProcess(QtCore.QThread):
         #self.update_textedit()
         #QtCore.QCoreApplication.processEvents()
         #self.textEdit.append("Start training...\nTestSetSamples:\n")
-        image_lists = PreProcess.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
+        image_lists, imageset_path = PreProcess.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
+        #print(imageset_path)
         #print(image_lists)
         if image_lists == -1 or image_lists == {}:
             self.error_signal.emit(1)
             return
 
+        #print(image_lists)
         label_name_list = list(image_lists.keys())
         label_name_list.sort()
+
+        self.status_info.emit("TestSetSamples:")
         for label_name in label_name_list:
             for sample in image_lists[label_name]['testing']:
                 self.status_info.emit(sample)
                 #self.update_textedit(sample)
                 #QtCore.QCoreApplication.processEvents()
-        self.status_info.emit("TestSetSamples:")
+
         n_classes = len(image_lists.keys())
         Parameters.N_CLASSES = n_classes
 
@@ -81,7 +85,7 @@ class TrainingProcess(QtCore.QThread):
 
                 try:
                     train_bottlenecks, train_ground_truth = PreProcess.get_random_cached_bottlenecks(
-                        sess, n_classes, image_lists, Parameters.BatchSize, 'training', jpeg_data_tensor, bottleneck_tensor)
+                        sess, n_classes, image_lists, imageset_path, Parameters.BatchSize, 'training', jpeg_data_tensor, bottleneck_tensor)
                 except:
                     self.error_signal.emit(3)
                     return
@@ -91,7 +95,7 @@ class TrainingProcess(QtCore.QThread):
                 if i % 100 == 0 or i + 1 == Parameters.LearningSteps:
                     try:
                         validation_bottlenecks, validation_ground_truth = PreProcess.get_random_cached_bottlenecks(
-                            sess, n_classes, image_lists, Parameters.BatchSize, 'validation', jpeg_data_tensor, bottleneck_tensor)
+                            sess, n_classes, image_lists, imageset_path, Parameters.BatchSize, 'validation', jpeg_data_tensor, bottleneck_tensor)
                     except:
                         self.error_signal.emit(4)
                         return
@@ -107,7 +111,7 @@ class TrainingProcess(QtCore.QThread):
             # 在最后的测试数据上测试正确率。
             try:
                 test_bottlenecks, test_ground_truth = PreProcess.get_test_bottlenecks(
-                    sess, image_lists, n_classes, jpeg_data_tensor, bottleneck_tensor)
+                    sess, image_lists, imageset_path, n_classes, jpeg_data_tensor, bottleneck_tensor)
             except:
                 self.error_signal.emit(5)
                 return

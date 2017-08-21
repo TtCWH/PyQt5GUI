@@ -4,11 +4,51 @@ import random
 import glob
 import os.path
 import Parameters
+from PIL import Image
+
+def picture_process(old_path):
+    try:
+        if not os.path.exists(Parameters.TRAININGDATABASE):
+            os.mkdir(Parameters.TRAININGDATABASE)
+
+        new_path = os.path.join(Parameters.TRAININGDATABASE, os.path.basename(old_path))
+        if not os.path.exists(new_path):
+            os.mkdir(new_path)
+
+        sub_dirs = [x[0] for x in os.walk(old_path)]
+        is_root_dir = True
+        for sub_dir in sub_dirs:
+            if is_root_dir:
+                is_root_dir = False
+                continue
+
+            pic_save_path = os.path.join(new_path, os.path.basename(sub_dir))
+            if not os.path.exists(pic_save_path):
+                os.mkdir(pic_save_path)
+
+            pic_lists = [x[2] for x in os.walk(sub_dir)]
+            for pic_list in pic_lists:
+                for pic in pic_list:
+                    pic_exists_path = os.path.join(sub_dir, pic)
+                    img = Image.open(pic_exists_path)
+                    out = img.resize((512, 512), Image.ANTIALIAS)
+                    img_name = os.path.join(pic_save_path, pic.split('.')[0] + '.jpg')
+                    out.save(img_name)
+
+        return new_path
+    except:
+        return -1
+
 
 def create_image_lists(testing_percentage, validation_percentage):
+    new_path = picture_process(Parameters.INPUT_DATA)
+    if new_path == -1:
+        return -1
     try:
         result = {}
-        sub_dirs = [x[0] for x in os.walk(Parameters.INPUT_DATA)]
+        label_name_list = []
+        sub_dirs = [x[0] for x in os.walk(new_path)]
+        #print(sub_dirs)
         is_root_dir = True
         for sub_dir in sub_dirs:
             if is_root_dir:
@@ -16,15 +56,15 @@ def create_image_lists(testing_percentage, validation_percentage):
                 continue
 
             extensions = ['jpg', 'jpeg']
-
             file_list = []
             dir_name = os.path.basename(sub_dir)
             for extension in extensions:
-                file_glob = os.path.join(Parameters.INPUT_DATA, dir_name, '*.' + extension)
+                file_glob = os.path.join(new_path, dir_name, '*.' + extension)
                 file_list.extend(glob.glob(file_glob))
             if not file_list: continue
 
             label_name = dir_name.lower()
+            label_name_list.append(label_name)
 
             training_images = []
             testing_images = []
@@ -46,8 +86,8 @@ def create_image_lists(testing_percentage, validation_percentage):
                 'testing': testing_images,
                 'validation': validation_images,
             }
-
-        return result
+        Parameters.LABEL_NAME_LIST = label_name_list
+        return result, new_path
     except:
         return -1
 
@@ -73,7 +113,7 @@ def run_bottleneck_on_image(sess, image_data, image_data_tensor, bottleneck_tens
     return bottleneck_values
 
 
-def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpeg_data_tensor, bottleneck_tensor):
+def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, category, jpeg_data_tensor, bottleneck_tensor):
     label_lists = image_lists[label_name]
     sub_dir = label_lists['dir']
     sub_dir_path = os.path.join(Parameters.CACHE_DIR, sub_dir)
@@ -84,7 +124,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpe
 
     if not os.path.exists(bottleneck_path):
 
-        image_path = get_image_path(image_lists, Parameters.INPUT_DATA, label_name, index, category)
+        image_path = get_image_path(image_lists, Set_Path, label_name, index, category)
 
         image_data = gfile.FastGFile(image_path, 'rb').read()
         # image = tf.read_file(image_path)
@@ -104,7 +144,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpe
     return bottleneck_values
 
 
-def get_random_cached_bottlenecks(sess, n_classes, image_lists, how_many, category, jpeg_data_tensor,
+def get_random_cached_bottlenecks(sess, n_classes, image_lists, Set_Path, how_many, category, jpeg_data_tensor,
                                   bottleneck_tensor):
     bottlenecks = []
     ground_truths = []
@@ -115,7 +155,7 @@ def get_random_cached_bottlenecks(sess, n_classes, image_lists, how_many, catego
         label_name = label_name_list[label_index]
         image_index = random.randrange(65536)
         bottleneck = get_or_create_bottleneck(
-            sess, image_lists, label_name, image_index, category, jpeg_data_tensor, bottleneck_tensor)
+            sess, Set_Path, image_lists, label_name, image_index, category, jpeg_data_tensor, bottleneck_tensor)
         ground_truth = np.zeros(n_classes, dtype=np.float32)
         ground_truth[label_index] = 1.0
         bottlenecks.append(bottleneck)
@@ -124,7 +164,7 @@ def get_random_cached_bottlenecks(sess, n_classes, image_lists, how_many, catego
     return bottlenecks, ground_truths
 
 
-def get_test_bottlenecks(sess, image_lists, n_classes, jpeg_data_tensor, bottleneck_tensor):
+def get_test_bottlenecks(sess, image_lists, Set_Path, n_classes, jpeg_data_tensor, bottleneck_tensor):
     bottlenecks = []
     ground_truths = []
     label_name_list = list(image_lists.keys())
@@ -132,7 +172,7 @@ def get_test_bottlenecks(sess, image_lists, n_classes, jpeg_data_tensor, bottlen
     for label_index, label_name in enumerate(label_name_list):
         category = 'testing'
         for index, unused_base_name in enumerate(image_lists[label_name][category]):
-            bottleneck = get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpeg_data_tensor,
+            bottleneck = get_or_create_bottleneck(sess, image_lists, Set_Path, label_name, index, category, jpeg_data_tensor,
                                                   bottleneck_tensor)
             ground_truth = np.zeros(n_classes, dtype=np.float32)
             ground_truth[label_index] = 1.0
