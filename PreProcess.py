@@ -1,10 +1,16 @@
 import  numpy as np
-from tensorflow.python.platform import gfile
 import random
 import glob
 import os.path
 import Parameters
 from PIL import Image
+
+def modify_pictrue(image_path, save_path, pic_name):
+    img = Image.open(image_path)
+    out = img.resize((512, 512), Image.ANTIALIAS)
+    img_name = os.path.join(save_path, pic_name.split('.')[0] + '.jpg')
+    out.save(img_name)
+    return img_name
 
 def picture_process(old_path):
     try:
@@ -30,11 +36,7 @@ def picture_process(old_path):
             for pic_list in pic_lists:
                 for pic in pic_list:
                     pic_exists_path = os.path.join(sub_dir, pic)
-                    img = Image.open(pic_exists_path)
-                    out = img.resize((512, 512), Image.ANTIALIAS)
-                    img_name = os.path.join(pic_save_path, pic.split('.')[0] + '.jpg')
-                    out.save(img_name)
-
+                    modify_pictrue(pic_exists_path, pic_save_path, pic)
         return new_path
     except:
         return -1
@@ -64,7 +66,6 @@ def create_image_lists(testing_percentage, validation_percentage):
             if not file_list: continue
 
             label_name = dir_name.lower()
-            label_name_list.append(label_name)
 
             training_images = []
             testing_images = []
@@ -86,7 +87,6 @@ def create_image_lists(testing_percentage, validation_percentage):
                 'testing': testing_images,
                 'validation': validation_images,
             }
-        Parameters.LABEL_NAME_LIST = label_name_list
         return result, new_path
     except:
         return -1
@@ -98,7 +98,8 @@ def get_image_path(image_lists, image_dir, label_name, index, category):
     mod_index = index % len(category_list)
     base_name = category_list[mod_index]
     sub_dir = label_lists['dir']
-    full_path = os.path.join(image_dir, sub_dir, base_name)
+    full_path = image_dir + '/' + sub_dir + '/' + base_name
+    #os.path.join(image_dir, sub_dir, base_name)
     return full_path
 
 
@@ -121,12 +122,14 @@ def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, ca
         os.makedirs(sub_dir_path)
 
     bottleneck_path = get_bottleneck_path(image_lists, label_name, index, category)
+    #print(bottleneck_path)
 
     if not os.path.exists(bottleneck_path):
-
         image_path = get_image_path(image_lists, Set_Path, label_name, index, category)
-
-        image_data = gfile.FastGFile(image_path, 'rb').read()
+        print(image_path)
+        image_data = open(image_path, 'rb').read()
+        #image_data = gfile.FastGFile(image_path, 'rb').read()
+        #print(image_data)
         # image = tf.read_file(image_path)
         # image_data = tf.image.decode_jpeg(image, channels=3)
 
@@ -155,7 +158,8 @@ def get_random_cached_bottlenecks(sess, n_classes, image_lists, Set_Path, how_ma
         label_name = label_name_list[label_index]
         image_index = random.randrange(65536)
         bottleneck = get_or_create_bottleneck(
-            sess, Set_Path, image_lists, label_name, image_index, category, jpeg_data_tensor, bottleneck_tensor)
+            sess,  image_lists, Set_Path, label_name, image_index, category, jpeg_data_tensor, bottleneck_tensor)
+        #print(bottleneck)
         ground_truth = np.zeros(n_classes, dtype=np.float32)
         ground_truth[label_index] = 1.0
         bottlenecks.append(bottleneck)

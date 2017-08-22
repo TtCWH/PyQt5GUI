@@ -13,7 +13,7 @@ JPEG_DATA_TENSOR_NAME = 'DecodeJpeg/contents:0'
 MODEL_DIR = 'datasets/inception_dec_2015'
 MODEL_FILE = 'tensorflow_inception_graph.pb'
 
-CACHE_DIR = 'datasets/bottleneck'
+CACHE_DIR = '_database/bottleneck'
 INPUT_DATA = 'datasets/ImageSet'
 
 MODEL_SAVE_PATH = 'Models/'

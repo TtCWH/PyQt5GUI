@@ -5,12 +5,20 @@ import os.path
 import os
 import shutil
 import WorkThread
-
+import json
 
 class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(MainGUI, self).__init__()
         self.setupUi(self)
+
+        # 载入配置
+        config_file = open('Config/config.json', 'r')
+        config_dic = json.load(config_file)
+        config_file.close()
+        self.Config = Parameters.Parameters(config_dic)
+        self.Config.adjust_parameters()
+
         self.show()
 
         self.ImageSetBrowseButton.clicked.connect(lambda: self.ShowFileDialog(1))
@@ -20,6 +28,10 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
         self.SaveResButton.clicked.connect(self.save_results)
         self.DelModelButton.clicked.connect(self.delete_model)
         self.StartPredictButton.clicked.connect(self.picture_predict)
+
+    def closeEvent(self, *args, **kwargs):
+        # 关闭窗口时保存配置
+        self.Config.save_configs()
 
     def delete_model(self):
         reply = QtWidgets.QMessageBox.warning(self, 'Delete Model', 'Delete the saved model?',
@@ -139,6 +151,9 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
             self.recovery_gui(1)
         if error_key == 5:
             QtWidgets.QMessageBox.warning(self, 'Error', "Can not form the test bottlenecks, please check your image set.\n")
+            self.recovery_gui(1)
+        if error_key == 6:
+            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the image bottleneck, please check your input.\n")
             self.recovery_gui(1)
 
     def start_training(self):

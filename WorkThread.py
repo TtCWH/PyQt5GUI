@@ -1,6 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import time
-from tensorflow.python.platform import gfile
 import numpy as np
 import tensorflow as tf
 import Parameters
@@ -32,6 +30,8 @@ class TrainingProcess(QtCore.QThread):
         #print(image_lists)
         label_name_list = list(image_lists.keys())
         label_name_list.sort()
+        print(label_name_list)
+        Parameters.LABEL_NAME_LIST = label_name_list
 
         self.status_info.emit("TestSetSamples:")
         for label_name in label_name_list:
@@ -44,7 +44,7 @@ class TrainingProcess(QtCore.QThread):
         Parameters.N_CLASSES = n_classes
 
         # 读取已经训练好的Inception-v3模型。
-        with gfile.FastGFile(os.path.join(Parameters.MODEL_DIR, Parameters.MODEL_FILE), 'rb') as f:
+        with open(os.path.join(Parameters.MODEL_DIR, Parameters.MODEL_FILE), 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
         bottleneck_tensor, jpeg_data_tensor = tf.import_graph_def(
@@ -135,15 +135,20 @@ class PicturePredict(QtCore.QThread):
         self.image_Path = image_path
 
     def run(self):
+        modified_image = PreProcess.modify_pictrue(self.image_Path, Parameters.TRAININGDATABASE,
+                                              os.path.basename(self.image_Path))
+        #print(modified_image)
+
         try:
-            image_data = gfile.FastGFile(self.image_Path, 'rb').read()
+            new_image = PreProcess.modify_pictrue(self.image_Path, Parameters.TRAININGDATABASE, os.path.basename(self.image_Path))
+            image_data = open(new_image, 'rb').read()
             #print(image_data)
         except:
             self.error_signal.emit(2)
             return
 
         # 读取已经训练好的Inception-v3模型。
-        with gfile.FastGFile(os.path.join(Parameters.MODEL_DIR, Parameters.MODEL_FILE), 'rb') as f:
+        with open(os.path.join(Parameters.MODEL_DIR, Parameters.MODEL_FILE), 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
         bottleneck_tensor, jpeg_data_tensor = tf.import_graph_def(
@@ -165,12 +170,15 @@ class PicturePredict(QtCore.QThread):
             sess.run(init)
 
             ckpt = tf.train.get_checkpoint_state(Parameters.MODEL_SAVE_PATH)
+            #print(ckpt)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 try:
                     predict_bottleneck = sess.run(bottleneck_tensor, {jpeg_data_tensor: image_data})
+                    #print(predict_bottleneck)
                 except:
-                    self.error_signal.emit(2)
+                    #print('WANG')
+                    self.error_signal.emit(6)
                     return
                 # print(predict_bottleneck.shape)
                 res = sess.run(final_tensor, feed_dict={bottleneck_input: predict_bottleneck})
