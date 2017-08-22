@@ -12,6 +12,7 @@ def modify_pictrue(image_path, save_path, pic_name):
     out.save(img_name)
     return img_name
 
+
 def picture_process(old_path):
     try:
         if not os.path.exists(Parameters.TRAININGDATABASE):
@@ -44,8 +45,16 @@ def picture_process(old_path):
 
 def create_image_lists(testing_percentage, validation_percentage):
     new_path = picture_process(Parameters.INPUT_DATA)
+    bottleneck_path = os.path.join(Parameters.CACHE_DIR, os.path.basename(new_path))
+    if not os.path.exists(bottleneck_path):
+        os.makedirs(bottleneck_path)
+
+    if bottleneck_path != Parameters.BOTTLENECK_PATH:
+        Parameters.BOTTLENECK_PATH = bottleneck_path
+
     if new_path == -1:
         return -1
+
     try:
         result = {}
         label_name_list = []
@@ -104,7 +113,7 @@ def get_image_path(image_lists, image_dir, label_name, index, category):
 
 
 def get_bottleneck_path(image_lists, label_name, index, category):
-    return get_image_path(image_lists, Parameters.CACHE_DIR, label_name, index, category) + '.txt'
+    return get_image_path(image_lists, Parameters.BOTTLENECK_PATH, label_name, index, category) + '.txt'
 
 
 def run_bottleneck_on_image(sess, image_data, image_data_tensor, bottleneck_tensor):
@@ -117,7 +126,7 @@ def run_bottleneck_on_image(sess, image_data, image_data_tensor, bottleneck_tens
 def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, category, jpeg_data_tensor, bottleneck_tensor):
     label_lists = image_lists[label_name]
     sub_dir = label_lists['dir']
-    sub_dir_path = os.path.join(Parameters.CACHE_DIR, sub_dir)
+    sub_dir_path = os.path.join(Parameters.BOTTLENECK_PATH, sub_dir)
     if not os.path.exists(sub_dir_path):
         os.makedirs(sub_dir_path)
 
@@ -126,7 +135,7 @@ def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, ca
 
     if not os.path.exists(bottleneck_path):
         image_path = get_image_path(image_lists, Set_Path, label_name, index, category)
-        print(image_path)
+        #print(image_path)
         image_data = open(image_path, 'rb').read()
         #image_data = gfile.FastGFile(image_path, 'rb').read()
         #print(image_data)
@@ -139,7 +148,7 @@ def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, ca
         with open(bottleneck_path, 'w') as bottleneck_file:
             bottleneck_file.write(bottleneck_string)
     else:
-
+        #print("WANGWANGWANG")
         with open(bottleneck_path, 'r') as bottleneck_file:
             bottleneck_string = bottleneck_file.read()
         bottleneck_values = [float(x) for x in bottleneck_string.split(',')]

@@ -1,6 +1,5 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-import Parameters
 import MainGUI
 import SettingsDialog
 

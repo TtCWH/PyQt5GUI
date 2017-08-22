@@ -4,23 +4,37 @@ import tensorflow as tf
 import Parameters
 import PreProcess
 import os.path
+import time
 
 class TrainingProcess(QtCore.QThread):
     status_info = QtCore.pyqtSignal(str)
     done_percentage = QtCore.pyqtSignal(float)
     finish_signal = QtCore.pyqtSignal(bool)
     error_signal = QtCore.pyqtSignal(int)
+    my_model_save_path = Parameters.MODEL_SAVE_PATH
+    my_model_save_name = Parameters.MODEL_SAVE_NAME
 
     def __init__(self, parent=None):
         super(TrainingProcess, self).__init__()
 
+
     def run(self):
+        global my_model_save_name, my_model_save_path
         #print(Parameters.INPUT_DATA)
         # self.check_status()
         #self.update_textedit()
         #QtCore.QCoreApplication.processEvents()
         #self.textEdit.append("Start training...\nTestSetSamples:\n")
         image_lists, imageset_path = PreProcess.create_image_lists(Parameters.TestSetPercentage, Parameters.ValidationPercentage)
+        if imageset_path:
+            image_set_name = os.path.basename(imageset_path)
+            my_model_save_name = image_set_name
+            Parameters.MODEL_SAVE_NAME = my_model_save_name
+            #print(image_set_name)
+            my_model_save_path = os.path.join(Parameters.MODEL_SAVE_PATH, image_set_name)
+            if not os.path.exists(my_model_save_path):
+                os.makedirs(my_model_save_path)
+
         #print(imageset_path)
         #print(image_lists)
         if image_lists == -1 or image_lists == {}:
@@ -30,7 +44,7 @@ class TrainingProcess(QtCore.QThread):
         #print(image_lists)
         label_name_list = list(image_lists.keys())
         label_name_list.sort()
-        print(label_name_list)
+        #print(label_name_list)
         Parameters.LABEL_NAME_LIST = label_name_list
 
         self.status_info.emit("TestSetSamples:")
@@ -102,11 +116,11 @@ class TrainingProcess(QtCore.QThread):
                     validation_accuracy = sess.run(evaluation_step, feed_dict={
                         bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
                     mid_res_show = 'Step %d: Validation accuracy on random sampled %d examples = %.1f%%' % \
-                                   (i, Parameters.BatchSize, validation_accuracy * 100)
+                                   (i+1, Parameters.BatchSize, validation_accuracy * 100)
                     self.status_info.emit(mid_res_show)
                     #self.update_textedit(mid_res_show)
                     #QtCore.QCoreApplication.processEvents()
-                    saver.save(sess, os.path.join(Parameters.MODEL_SAVE_PATH, Parameters.MODEL_SAVE_NAME), global_step=i)
+                    saver.save(sess, os.path.join(my_model_save_path, my_model_save_name), global_step=i+1)
 
             # 在最后的测试数据上测试正确率。
             try:
@@ -129,16 +143,13 @@ class PicturePredict(QtCore.QThread):
     trigger = QtCore.pyqtSignal(int)
     finish_signal = QtCore.pyqtSignal(bool)
     error_signal = QtCore.pyqtSignal(int)
+    feed_back = QtCore.pyqtSignal(list)
 
     def __init__(self,  image_path, parent=None):
         super(PicturePredict, self).__init__()
         self.image_Path = image_path
 
     def run(self):
-        modified_image = PreProcess.modify_pictrue(self.image_Path, Parameters.TRAININGDATABASE,
-                                              os.path.basename(self.image_Path))
-        #print(modified_image)
-
         try:
             new_image = PreProcess.modify_pictrue(self.image_Path, Parameters.TRAININGDATABASE, os.path.basename(self.image_Path))
             image_data = open(new_image, 'rb').read()
@@ -169,8 +180,8 @@ class PicturePredict(QtCore.QThread):
             init = tf.global_variables_initializer()
             sess.run(init)
 
-            ckpt = tf.train.get_checkpoint_state(Parameters.MODEL_SAVE_PATH)
-            #print(ckpt)
+            predict_model_path = Parameters.MODEL_SAVE_PATH + '/' + Parameters.MODEL_SAVE_NAME
+            ckpt = tf.train.get_checkpoint_state(predict_model_path)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 try:
@@ -185,11 +196,12 @@ class PicturePredict(QtCore.QThread):
                 res = np.argmax(res, 1)
                 # print(res)
                 self.trigger.emit(res[0])
+                self.feed_back.emit([res[0], new_image, Parameters.LABEL_NAME_LIST])
             else:
                 print('No checkpoint file found.')
                 self.trigger.emit(-1)
-
         self.finish_signal.emit(True)
+        time.sleep(2)
 
 
 

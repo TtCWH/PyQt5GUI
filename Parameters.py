@@ -14,6 +14,7 @@ MODEL_DIR = 'datasets/inception_dec_2015'
 MODEL_FILE = 'tensorflow_inception_graph.pb'
 
 CACHE_DIR = '_database/bottleneck'
+BOTTLENECK_PATH = '_database/bottleneck'
 INPUT_DATA = 'datasets/ImageSet'
 
 MODEL_SAVE_PATH = 'Models/'
@@ -33,7 +34,7 @@ class Parameters:
         global ValidationPercentage, TestSetPercentage, LearningRate, LearningSteps, BatchSize, \
             BOTTLENECK_TENSOR_SIZE, BOTTLENECK_TENSOR_NAME, JPEG_DATA_TENSOR_NAME, \
             MODEL_DIR, MODEL_FILE, CACHE_DIR, INPUT_DATA, MODEL_SAVE_PATH, MODEL_SAVE_NAME, \
-            Result_Save_Path, N_CLASSES, LABEL_NAME_LIST, TRAININGDATABASE
+            Result_Save_Path, N_CLASSES, LABEL_NAME_LIST, TRAININGDATABASE, BOTTLENECK_PATH
 
         ValidationPercentage = self.config['ValidationPercentage']
         TestSetPercentage = self.config['TestSetPercentage']
@@ -48,6 +49,7 @@ class Parameters:
         MODEL_DIR = self.config['MODEL_DIR']
         MODEL_FILE = self.config['MODEL_FILE']
         CACHE_DIR = self.config['CACHE_DIR']
+        BOTTLENECK_PATH = self.config['BOTTLENECK_PATH']
         INPUT_DATA = self.config['INPUT_DATA']
         MODEL_SAVE_PATH = self.config['MODEL_SAVE_PATH']
         MODEL_SAVE_NAME = self.config['MODEL_SAVE_NAME']
@@ -57,7 +59,8 @@ class Parameters:
         LABEL_NAME_LIST = self.config['LABEL_NAME_LIST']
         TRAININGDATABASE = self.config['TRAININGDATABASE']
 
-    def save_configs(self):
+
+    def save_configs(self, save_file_path):
         global ValidationPercentage, TestSetPercentage, LearningRate, LearningSteps, BatchSize, \
             BOTTLENECK_TENSOR_SIZE, BOTTLENECK_TENSOR_NAME, JPEG_DATA_TENSOR_NAME, \
             MODEL_DIR, MODEL_FILE, CACHE_DIR, INPUT_DATA, MODEL_SAVE_PATH, MODEL_SAVE_NAME, \
@@ -76,6 +79,7 @@ class Parameters:
         self.config['MODEL_DIR'] = MODEL_DIR
         self.config['MODEL_FILE'] = MODEL_FILE
         self.config['CACHE_DIR'] = CACHE_DIR
+        self.config['BOTTLENECK_PATH'] = BOTTLENECK_PATH
         self.config['INPUT_DATA'] = INPUT_DATA
         self.config['MODEL_SAVE_PATH'] = MODEL_SAVE_PATH
         self.config['MODEL_SAVE_NAME'] = MODEL_SAVE_NAME
@@ -85,7 +89,7 @@ class Parameters:
         self.config['LABEL_NAME_LIST'] = LABEL_NAME_LIST
         self.config['TRAININGDATABASE'] = TRAININGDATABASE
 
-        config_file = open('Config/config.json', 'w')
+        config_file = open(save_file_path, 'w')
         config_file.write(json.dumps(self.config))
 
 
