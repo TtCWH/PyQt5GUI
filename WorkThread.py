@@ -26,6 +26,7 @@ class TrainingProcess(QtCore.QThread):
 
     def strat_training(self):
         if self.runs:
+            self.status_info.emit("Images Preprocessing")
             global my_model_save_name, my_model_save_path
             # print(Parameters.INPUT_DATA)
             # self.check_status()

@@ -204,19 +204,29 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
 
 
     def wrong_prediction(self, feed_backs):
-        reply = QtWidgets.QMessageBox.question(self, 'Oops',
+        self.WrongButton.setDisabled(True)
+        self.RightButton.setDisabled(True)
+        try:
+            reply = QtWidgets.QMessageBox.question(self, 'Oops',
                                                'Oops...Sorry for a bad prediction.\nDo you want to make a feedback?',
                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        if reply == QtWidgets.QMessageBox.Yes:
-            self.ChooseDialog = ChooseRightLabel.ChooseRightLabel(feed_backs[1], feed_backs[2])
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.ChooseDialog = ChooseRightLabel.ChooseRightLabel(feed_backs[1], feed_backs[2])
+        except:
+            QtWidgets.QMessageBox.warning(self, 'Error', 'Something was wrong!')
 
 
     def right_prediction(self, feed_backs):
-        dest_path = os.path.join(Parameters.TRAININGDATABASE, Parameters.MODEL_SAVE_NAME, str(feed_backs[0]))
-        shutil.copy(feed_backs[1], dest_path)
-        QtWidgets.QMessageBox.information(self, 'Nice', 'A nice prediction. So happy!')
-        if os.path.exists(feed_backs[1]):
-            os.remove(feed_backs[1])
+        self.WrongButton.setDisabled(True)
+        self.RightButton.setDisabled(True)
+        try:
+            dest_path = os.path.join(Parameters.TRAININGDATABASE, Parameters.MODEL_SAVE_NAME, str(feed_backs[0]))
+            shutil.copy(feed_backs[1], dest_path)
+            QtWidgets.QMessageBox.information(self, 'Nice', 'A nice prediction. So happy!')
+            if os.path.exists(feed_backs[1]):
+                os.remove(feed_backs[1])
+        except:
+            QtWidgets.QMessageBox.warning(self, 'Error', 'Something was wrong!')
 
 
     def handle_feed_back(self, feed_back_list):
