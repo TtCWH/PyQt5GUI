@@ -220,7 +220,8 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
         self.WrongButton.setDisabled(True)
         self.RightButton.setDisabled(True)
         try:
-            dest_path = os.path.join(Parameters.TRAININGDATABASE, Parameters.MODEL_SAVE_NAME, str(feed_backs[0]))
+            label = Parameters.LABEL_NAME_LIST[feed_backs[0]]
+            dest_path = os.path.join(Parameters.TRAININGDATABASE, Parameters.MODEL_SAVE_NAME, label)
             shutil.copy(feed_backs[1], dest_path)
             QtWidgets.QMessageBox.information(self, 'Nice', 'A nice prediction. So happy!')
             if os.path.exists(feed_backs[1]):

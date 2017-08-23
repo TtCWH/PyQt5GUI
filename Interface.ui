@@ -95,8 +95,8 @@ QTabBar::tab{height:20}</string>
        </font>
       </property>
       <property name="text">
-       <string>Before strating, please choose a folder as the image set and 
-load your configiure file:</string>
+       <string>Before starting, please choose a folder as the image set and 
+load your configure file:</string>
       </property>
       <property name="textFormat">
        <enum>Qt::AutoText</enum>

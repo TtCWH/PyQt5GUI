@@ -4,6 +4,7 @@ import tensorflow as tf
 import Parameters
 import PreProcess
 import os.path
+import shutil
 
 class TrainingProcess(QtCore.QThread):
     status_info = QtCore.pyqtSignal(str)
@@ -103,7 +104,7 @@ class TrainingProcess(QtCore.QThread):
 
                 # 训练过程
                 for i in range(Parameters.LearningSteps):
-                    Done_percentage = float(i) / Parameters.LearningSteps * 100.0 + 1.0
+                    Done_percentage = float(i) / Parameters.LearningSteps * 100.0
                     self.done_percentage.emit(Done_percentage)
                     # QtCore.QCoreApplication.processEvents()
 
@@ -145,6 +146,7 @@ class TrainingProcess(QtCore.QThread):
                     bottleneck_input: test_bottlenecks, ground_truth_input: test_ground_truth})
                 res_show = 'Final test accuracy = %.1f%%' % (test_accuracy * 100)
                 self.status_info.emit(res_show)
+                self.done_percentage.emit(100)
                 # self.update_textedit(res_show)
                 # QtCore.QCoreApplication.processEvents()
 
@@ -171,11 +173,12 @@ class PicturePredict(QtCore.QThread):
     def predict_picture(self):
         if self.runs:
             try:
-                new_image = PreProcess.modify_pictrue(Parameters.input_image_path, Parameters.TRAININGDATABASE,
-                                                      os.path.basename(Parameters.input_image_path))
+                new_image = os.path.join(Parameters.TRAININGDATABASE, os.path.basename(Parameters.input_image_path))
+                shutil.copyfile(Parameters.input_image_path, new_image)
                 image_data = open(new_image, 'rb').read()
                 # print(image_data)
             except:
+                os.remove(new_image)
                 self.error_signal.emit(2)
                 return
 
@@ -211,6 +214,8 @@ class PicturePredict(QtCore.QThread):
                         # print(predict_bottleneck)
                     except:
                         # print('WANG')
+                        if os.path.exists(new_image):
+                            os.remove(new_image)
                         self.error_signal.emit(6)
                         return
                     # print(predict_bottleneck.shape)

@@ -245,8 +245,8 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "ImagePredict"))
-        self.SelFolderTip.setText(_translate("MainWindow", "Before strating, please choose a folder as the image set and \n"
-"load your configiure file:"))
+        self.SelFolderTip.setText(_translate("MainWindow", "Before starting, please choose a folder as the image set and \n"
+"load your configure file:"))
         self.ImageSetLocLabel.setText(_translate("MainWindow", "ImageSet Location:"))
         self.ImageSetBrowseButton.setText(_translate("MainWindow", "Browse"))
         self.SettingsButton.setText(_translate("MainWindow", " Settings..."))

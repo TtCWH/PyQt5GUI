@@ -3,15 +3,7 @@ import random
 import glob
 import os.path
 import Parameters
-from PIL import Image
-
-def modify_pictrue(image_path, save_path, pic_name):
-    img = Image.open(image_path)
-    out = img.resize((512, 512), Image.ANTIALIAS)
-    img_name = os.path.join(save_path, pic_name.split('.')[0] + '.jpg')
-    out.save(img_name)
-    return img_name
-
+import shutil
 
 def picture_process(old_path):
     try:
@@ -37,20 +29,23 @@ def picture_process(old_path):
             for pic_list in pic_lists:
                 for pic in pic_list:
                     pic_exists_path = os.path.join(sub_dir, pic)
-                    modify_pictrue(pic_exists_path, pic_save_path, pic)
+                    shutil.copy(pic_exists_path, pic_save_path)
         return new_path
     except:
         return -1
 
 
 def create_image_lists(testing_percentage, validation_percentage):
-    new_path = picture_process(Parameters.INPUT_DATA)
-    bottleneck_path = os.path.join(Parameters.CACHE_DIR, os.path.basename(new_path))
-    if not os.path.exists(bottleneck_path):
-        os.makedirs(bottleneck_path)
+    try:
+        new_path = picture_process(Parameters.INPUT_DATA)
+        bottleneck_path = os.path.join(Parameters.CACHE_DIR, os.path.basename(new_path))
+        if not os.path.exists(bottleneck_path):
+            os.makedirs(bottleneck_path)
 
-    if bottleneck_path != Parameters.BOTTLENECK_PATH:
-        Parameters.BOTTLENECK_PATH = bottleneck_path
+        if bottleneck_path != Parameters.BOTTLENECK_PATH:
+            Parameters.BOTTLENECK_PATH = bottleneck_path
+    except:
+        return -1
 
     if new_path == -1:
         return -1
@@ -136,17 +131,20 @@ def get_or_create_bottleneck(sess,  image_lists, Set_Path, label_name, index, ca
     if not os.path.exists(bottleneck_path):
         image_path = get_image_path(image_lists, Set_Path, label_name, index, category)
         #print(image_path)
-        image_data = open(image_path, 'rb').read()
-        #image_data = gfile.FastGFile(image_path, 'rb').read()
-        #print(image_data)
-        # image = tf.read_file(image_path)
-        # image_data = tf.image.decode_jpeg(image, channels=3)
+        try:
+            image_data = open(image_path, 'rb').read()
+            #image_data = gfile.FastGFile(image_path, 'rb').read()
+            #print(image_data)
+            # image = tf.read_file(image_path)
+            # image_data = tf.image.decode_jpeg(image, channels=3)
 
-        bottleneck_values = run_bottleneck_on_image(sess, image_data, jpeg_data_tensor, bottleneck_tensor)
+            bottleneck_values = run_bottleneck_on_image(sess, image_data, jpeg_data_tensor, bottleneck_tensor)
 
-        bottleneck_string = ','.join(str(x) for x in bottleneck_values)
-        with open(bottleneck_path, 'w') as bottleneck_file:
-            bottleneck_file.write(bottleneck_string)
+            bottleneck_string = ','.join(str(x) for x in bottleneck_values)
+            with open(bottleneck_path, 'w') as bottleneck_file:
+                bottleneck_file.write(bottleneck_string)
+        except:
+            pass
     else:
         #print("WANGWANGWANG")
         with open(bottleneck_path, 'r') as bottleneck_file:
