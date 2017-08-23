@@ -21,7 +21,8 @@ class ChooseRightLabel(Ui_Dialog, QtWidgets.QDialog):
         dest_path = os.path.join(Parameters.TRAININGDATABASE ,Parameters.MODEL_SAVE_NAME, self.comboBox.currentText())
         shutil.copy(self.wrong_image, dest_path)
         QtWidgets.QMessageBox.information(self, 'Thanks', 'Thank you for the feedback.\nI will be better!')
-        os.remove(self.wrong_image)
+        if os.path.exists(self.wrong_image):
+            os.remove(self.wrong_image)
 
 
 

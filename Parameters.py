@@ -25,6 +25,8 @@ TRAININGDATABASE = '_database/'
 N_CLASSES = 2
 LABEL_NAME_LIST = ['非内波', '内波']
 
+input_image_path = ''
+
 
 class Parameters:
     def __init__(self, config_dictory):
