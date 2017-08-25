@@ -7,6 +7,7 @@ import shutil
 import WorkThread
 import json
 import ChooseRightLabel
+import Readme
 
 
 class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
@@ -28,7 +29,32 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
         self.StartPredictButton.clicked.connect(self.picture_predict)
         self.WrongButton.clicked.connect(lambda: self.wrong_prediction(self.feed_backs))
         self.RightButton.clicked.connect(lambda: self.right_prediction(self.feed_backs))
+        self.actionRead_Me.triggered.connect(self.show_readme_file)
+        self.actionLicense.triggered.connect(self.show_license)
+        self.actionContact_Author.triggered.connect(self.contact_author)
 
+    def contact_author(self):
+        QtWidgets.QMessageBox.information(self, 'Contact Author', 'Please send an email to 544782445@qq.com')
+
+    def show_license(self):
+        try:
+            file = open('LICENSE', 'r')
+
+            with file:
+                data = file.read()
+                self.license = Readme.Readme(data)
+        except:
+            self.error_process(7)
+
+    def show_readme_file(self):
+        try:
+            file = open('README.md', 'r')
+
+            with file:
+                data = file.read()
+                self.read_me = Readme.Readme(data)
+        except:
+            self.error_process(7)
 
     def closeEvent(self, *args, **kwargs):
         # 关闭窗口时保存配置
@@ -181,26 +207,28 @@ class MainGUI(Ui_MainWindow, QtWidgets.QMainWindow):
 
     def error_process(self, error_key):
         if error_key == 1:
-            QtWidgets.QMessageBox.warning(self, 'Error', "Can not load image list, please check your image set.\n")
+            QtWidgets.QMessageBox.warning(self, 'Error', "Can not load image list, please check your image set.")
             self.recovery_gui(1)
         if error_key == 2:
-            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the image data, please check your input.\n")
+            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the image data, please check your input.")
             self.recovery_gui(2)
         if error_key == 3:
             QtWidgets.QMessageBox.warning(self, 'Error',
-                                          "Can not form the train bottlenecks, please check your image set.\n")
+                                          "Can not form the train bottlenecks, please check your image set.")
             self.recovery_gui(1)
         if error_key == 4:
             QtWidgets.QMessageBox.warning(self, 'Error',
-                                          "Can not form the validation bottlenecks, please check your image set.\n")
+                                          "Can not form the validation bottlenecks, please check your image set.")
             self.recovery_gui(1)
         if error_key == 5:
             QtWidgets.QMessageBox.warning(self, 'Error',
-                                          "Can not form the test bottlenecks, please check your image set.\n")
+                                          "Can not form the test bottlenecks, please check your image set.")
             self.recovery_gui(1)
         if error_key == 6:
-            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the image bottleneck, please check your input.\n")
+            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the image bottleneck, please check your input.")
             self.recovery_gui(1)
+        if error_key == 7:
+            QtWidgets.QMessageBox.warning(self, 'Error', "Can not get the file.")
 
 
     def wrong_prediction(self, feed_backs):
