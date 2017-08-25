@@ -4,6 +4,7 @@ import glob
 import os.path
 import Parameters
 import shutil
+from PIL import Image
 
 def picture_process(old_path):
     try:
@@ -29,7 +30,14 @@ def picture_process(old_path):
             for pic_list in pic_lists:
                 for pic in pic_list:
                     pic_exists_path = os.path.join(sub_dir, pic)
-                    shutil.copy(pic_exists_path, pic_save_path)
+                    if pic.split('.')[1] == 'tif' or pic.split('.')[1] == 'tiff' or pic.split('.')[1] == 'png'\
+                        or pic.split('.')[1] == 'TIF' or pic.split('.')[1] == 'TIFF' or pic.split('.')[1] == 'PNG':
+                        im = Image.open(pic_exists_path)
+                        new_image_name = os.path.join(new_path, sub_dir, pic.split('.')[0]+'.jpg')
+                        im.save(new_image_name)
+                    elif pic.split('.')[1] == 'jpg' or pic.split('.')[1] == 'JPG' or pic.split('.')[1] == 'jpeg'\
+                        or pic.split('.')[1] == 'JPEG':
+                        shutil.copy(pic_exists_path, pic_save_path)
         return new_path
     except:
         return -1
@@ -61,7 +69,7 @@ def create_image_lists(testing_percentage, validation_percentage):
                 is_root_dir = False
                 continue
 
-            extensions = ['jpg', 'jpeg']
+            extensions = ['jpg', 'jpeg', 'JPG', 'JPEG']
             file_list = []
             dir_name = os.path.basename(sub_dir)
             for extension in extensions:

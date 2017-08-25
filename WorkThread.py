@@ -60,7 +60,7 @@ class TrainingProcess(QtCore.QThread):
             self.status_info.emit("TestSetSamples:")
             for label_name in label_name_list:
                 for sample in image_lists[label_name]['testing']:
-                    self.status_info.emit(sample)
+                    self.status_info.emit(label_name + ' ' + sample)
                     # self.update_textedit(sample)
                     # QtCore.QCoreApplication.processEvents()
 
